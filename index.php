@@ -18,6 +18,7 @@ $produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
 <header>
+    <h1>Bienvenue</h1>
     <h1>🛒 Notre Boutique</h1>
     <!-- Compteur du panier dans le menu -->
     <a href="panier.php">
