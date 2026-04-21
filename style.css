@@ -1,0 +1,117 @@
+* {
+    box-sizing: border-box; /* inclut padding + border dans la largeur */
+    margin: 0; 
+    padding: 0; 
+}
+
+/* Style général de la page */
+body {
+    font-family: Arial, sans-serif; 
+    background: #f5f5f5; 
+    color: #333;
+}
+
+/* Barre du haut (header) */
+header {
+    background: #2c3e50; 
+    color: white; 
+    padding: 16px 24px; 
+    display: flex; 
+    justify-content: space-between; /* espace entre titre et lien */
+    align-items: center; /* alignement vertical */
+}
+
+/* Style des liens dans le header */
+header a {
+    color: #f0e68c; 
+    text-decoration: none; /* enlever le soulignement */
+}
+
+/* Grille des produits */
+.produits-grid {
+    display: grid; /* utilisation du grid layout */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+    /* crée des colonnes responsives */
+    gap: 20px; /* espace entre les cartes */
+    padding: 24px; /* espace autour */
+}
+
+/* Carte d’un produit */
+.carte-produit {
+    background: white; 
+    border-radius: 8px; /* coins arrondis */
+    padding: 16px; /* espace interne */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* ombre légère */
+}
+
+/* Titre du produit */
+.carte-produit h3 {
+    margin-bottom: 8px; /* espace sous le titre */
+}
+
+/* Prix du produit */
+.prix {
+    font-size: 1.2rem; 
+    color: #e74c3c; 
+    font-weight: bold; 
+    margin: 8px 0; /* espace vertical */
+}
+
+/* Tableau du panier */
+table {
+    width: 90%; 
+    margin: 24px auto; /* centrer le tableau */
+    border-collapse: collapse; /* fusionner les bordures */
+    background: white; 
+    border-radius: 8px; /* coins arrondis */
+    overflow: hidden; /* cacher dépassement */
+}
+
+/* Cellules du tableau */
+th, td {
+    padding: 12px 16px; /* espace interne */
+    text-align: left; /* alignement du texte */
+    border-bottom: 1px solid #eee; /* ligne séparatrice */
+}
+
+/* En-tête du tableau */
+th {
+    background: #2c3e50; 
+    color: white; 
+}
+
+/* Section du total */
+.total {
+    text-align: right; /* aligner à droite */
+    padding: 16px 5%; /* espace */
+    font-size: 1.3rem; 
+}
+
+/* Style général des boutons */
+button {
+    background: #2c3e50; 
+    color: white; 
+    border: none; 
+    padding: 8px 14px; /* espace interne */
+    border-radius: 4px; /* coins arrondis */
+    cursor: pointer; 
+}
+
+/* Effet au survol */
+button:hover {
+    background: #34495e; /* couleur légèrement différente */
+}
+
+/* Bouton supprimer */
+.btn-supprimer {
+    background: #e74c3c; 
+}
+
+/* Bouton valider commande */
+.btn-valider {
+    background: #27ae60; 
+    padding: 12px 28px; 
+    font-size: 1rem; 
+    display: block; /* prend toute la ligne */
+    margin: 16px auto; /* centré */
+}
