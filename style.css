@@ -1,0 +1,416 @@
+/* ============================================
+   VARIABLES CSS - Couleurs et polices
+   ============================================ */
+:root {
+    --couleur-principale: #1a1a2e;  /* bleu foncé */
+    --couleur-accent: #e94560;      /* rouge/rose */
+    --couleur-vert: #0f9b58;        /* vert pour valider */
+    --couleur-fond: #f0f2f5;        /* gris clair fond */
+    --couleur-carte: #ffffff;       /* blanc pour cartes */
+    --couleur-texte: #2d2d2d;       /* texte principal */
+    --couleur-texte-clair: #777;    /* texte secondaire */
+    --ombre: 0 4px 15px rgba(0,0,0,0.1);
+    --rayon: 12px;
+    --transition: all 0.3s ease;
+}
+
+/* ============================================
+   RESET - Remet les marges à zéro
+   ============================================ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ============================================
+   CORPS DE PAGE
+   ============================================ */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--couleur-fond);
+    color: var(--couleur-texte);
+    min-height: 100vh;
+}
+
+/* ============================================
+   HEADER - Barre de navigation en haut
+   ============================================ */
+header {
+    background: var(--couleur-principale);
+    color: white;
+    padding: 18px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    position: sticky;         /* reste collé en haut quand on scroll */
+    top: 0;
+    z-index: 100;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+/* Lien dans le header (panier) */
+header a {
+    color: #fff;
+    text-decoration: none;
+    background: var(--couleur-accent);
+    padding: 8px 18px;
+    border-radius: 25px;        /* forme pilule */
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+header a:hover {
+    background: #c73652;
+    transform: translateY(-2px);  /* légère remontée au survol */
+}
+
+/* ============================================
+   TITRE DE SECTION
+   ============================================ */
+.titre-section {
+    text-align: center;
+    padding: 32px 24px 16px;
+    font-size: 1.8rem;
+    color: var(--couleur-principale);
+}
+
+/* ============================================
+   GRILLE DES PRODUITS
+   ============================================ */
+.produits-grid {
+    display: grid;
+    /* colonnes auto qui font min 240px chacune */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+    padding: 16px 32px 40px;
+    max-width: 1200px;
+    margin: 0 auto;             /* centrer sur la page */
+}
+
+/* ============================================
+   CARTE PRODUIT
+   ============================================ */
+.carte-produit {
+    background: var(--couleur-carte);
+    border-radius: var(--rayon);
+    padding: 20px;
+    box-shadow: var(--ombre);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: var(--transition);
+}
+
+.carte-produit:hover {
+    transform: translateY(-5px);    /* remonte au survol */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Badge categorie (optionnel) */
+.carte-produit .badge {
+    background: #eef0ff;
+    color: var(--couleur-principale);
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.carte-produit h3 {
+    font-size: 1.1rem;
+    color: var(--couleur-principale);
+}
+
+.carte-produit p {
+    color: var(--couleur-texte-clair);
+    font-size: 0.9rem;
+    flex-grow: 1;               /* prend l'espace disponible */
+}
+
+/* Prix en rouge */
+.prix {
+    font-size: 1.3rem;
+    color: var(--couleur-accent);
+    font-weight: 700;
+}
+
+/* ============================================
+   FORMULAIRES
+   ============================================ */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Ligne avec label et input côte à côte */
+.form-ligne {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Champ de saisie numérique */
+input[type="number"] {
+    width: 70px;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--couleur-texte);
+    transition: var(--transition);
+}
+
+input[type="number"]:focus {
+    outline: none;
+    border-color: var(--couleur-accent);  /* contour rouge au focus */
+}
+
+/* Message d'erreur validation */
+.erreur-message {
+    color: var(--couleur-accent);
+    font-size: 0.82rem;
+    display: none;              /* caché par défaut */
+}
+
+/* ============================================
+   BOUTONS
+   ============================================ */
+button {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+/* Bouton principal (ajouter) */
+.btn-ajouter {
+    background: var(--couleur-principale);
+    color: white;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.btn-ajouter:hover {
+    background: #2d2d50;
+    transform: translateY(-2px);
+}
+
+/* Bouton mise à jour */
+.btn-modifier {
+    background: #3498db;
+    color: white;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+}
+
+.btn-modifier:hover {
+    background: #2980b9;
+}
+
+/* Bouton supprimer (rouge) */
+.btn-supprimer {
+    background: var(--couleur-accent);
+    color: white;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+}
+
+.btn-supprimer:hover {
+    background: #c73652;
+}
+
+/* Bouton valider commande (vert) */
+.btn-valider {
+    background: var(--couleur-vert);
+    color: white;
+    padding: 14px 36px;
+    font-size: 1rem;
+    border-radius: 10px;
+    display: block;
+    margin: 16px auto 32px;
+    letter-spacing: 0.5px;
+}
+
+.btn-valider:hover {
+    background: #0a7a45;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(15,155,88,0.3);
+}
+
+/* ============================================
+   TABLEAU DU PANIER
+   ============================================ */
+.conteneur-panier {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 0 16px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--rayon);
+    overflow: hidden;
+    box-shadow: var(--ombre);
+}
+
+/* En-têtes du tableau */
+th {
+    background: var(--couleur-principale);
+    color: white;
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+/* Cellules */
+td {
+    padding: 12px 18px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.95rem;
+}
+
+/* Ligne alternée (zebra) */
+tr:nth-child(even) td {
+    background: #fafafa;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Ligne au survol */
+tbody tr:hover td {
+    background: #fff5f6;
+}
+
+/* ============================================
+   TOTAL
+   ============================================ */
+.total {
+    text-align: right;
+    padding: 20px 24px;
+    font-size: 1.4rem;
+    color: var(--couleur-principale);
+}
+
+.total span {
+    color: var(--couleur-accent);
+}
+
+/* ============================================
+   PANIER VIDE
+   ============================================ */
+.panier-vide {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--couleur-texte-clair);
+}
+
+.panier-vide .icone {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.panier-vide p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.panier-vide a {
+    color: white;
+    background: var(--couleur-principale);
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.panier-vide a:hover {
+    background: var(--couleur-accent);
+}
+
+/* ============================================
+   PAGE CONFIRMATION COMMANDE
+   ============================================ */
+.confirmation {
+    max-width: 500px;
+    margin: 80px auto;
+    text-align: center;
+    background: white;
+    padding: 48px 32px;
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+}
+
+.confirmation .icone-succes {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.confirmation h2 {
+    color: var(--couleur-vert);
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+}
+
+.confirmation p {
+    color: var(--couleur-texte-clair);
+    font-size: 1rem;
+    margin-bottom: 24px;
+}
+
+.confirmation a {
+    color: white;
+    background: var(--couleur-principale);
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.confirmation a:hover {
+    background: var(--couleur-accent);
+}
+
+/* ============================================
+   RESPONSIVE - Adaptation mobile
+   ============================================ */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .produits-grid {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    table {
+        font-size: 0.85rem;
+    }
+
+    th, td {
+        padding: 10px 12px;
+    }
+}

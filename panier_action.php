@@ -1,80 +1,99 @@
 <?php
-// Démarrer la session pour pouvoir utiliser $_SESSION
-session_start();
+// ============================================
+// PANIER ACTION - Traite les actions du panier
+// (ajouter, modifier, supprimer)
+// ============================================
 
-// Récupérer l'action envoyée par le formulaire (ajouter, modifier, supprimer)
-// Si aucune action n'est envoyée, on met une valeur vide
+session_start();   // Nécessaire pour accéder à $_SESSION
+
+// Récupère l'action envoyée par le formulaire
 $action = $_POST['action'] ?? '';
 
-// =======================
-// CAS 1 : AJOUTER PRODUIT
-// =======================
+// ============================================
+// SÉCURITÉ : Vérifie que la requête est POST
+// ============================================
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: index.php');
+    exit;
+}
+
+// ============================================
+// CAS 1 : AJOUTER UN PRODUIT AU PANIER
+// ============================================
 if ($action === 'ajouter') {
 
-    // Récupérer les informations du produit depuis le formulaire
-    $id = $_POST['id'];          // identifiant du produit
-    $nom = $_POST['nom'];        // nom du produit
-    $prix = $_POST['prix'];      // prix du produit
-    $qte = (int)$_POST['quantite']; // quantité (convertie en entier)
+    // Récupère et nettoie les données du formulaire
+    $id   = (int)$_POST['id'];              // converti en entier (sécurité)
+    $nom  = htmlspecialchars($_POST['nom']); // protège contre les injections HTML
+    $prix = (float)$_POST['prix'];           // converti en nombre décimal
+    $qte  = (int)$_POST['quantite'];         // converti en entier
 
-    // Vérifier si le produit existe déjà dans le panier
+    // CONTRÔLE CÔTÉ SERVEUR : vérifie que les données sont valides
+    if ($id <= 0 || $qte < 1 || $prix <= 0) {
+        // Données invalides → on redirige sans rien faire
+        header('Location: index.php');
+        exit;
+    }
+
+    // Initialise le panier si il n'existe pas encore
+    if (!isset($_SESSION['panier'])) {
+        $_SESSION['panier'] = [];
+    }
+
+    // Si le produit est déjà dans le panier → ajoute la quantité
     if (isset($_SESSION['panier'][$id])) {
-
-        // Si oui → on ajoute la quantité
         $_SESSION['panier'][$id]['quantite'] += $qte;
-
     } else {
-
-        // Sinon → on crée un nouveau produit dans le panier
+        // Sinon → crée une nouvelle entrée dans le panier
         $_SESSION['panier'][$id] = [
-            'nom' => $nom,
-            'prix' => $prix,
+            'nom'      => $nom,
+            'prix'     => $prix,
             'quantite' => $qte
         ];
     }
+
+    // Redirige vers la boutique après l'ajout
+    header('Location: index.php');
+    exit;
 }
 
-// =======================
-// CAS 2 : MODIFIER QUANTITÉ
-// =======================
+// ============================================
+// CAS 2 : MODIFIER LA QUANTITÉ
+// ============================================
 if ($action === 'modifier') {
 
-    // Récupérer l'id du produit et la nouvelle quantité
-    $id = $_POST['id'];
+    $id  = (int)$_POST['id'];
     $qte = (int)$_POST['quantite'];
 
-    // Si la quantité est 0 ou négative
+    // Si la quantité est 0 ou négative → supprime le produit
     if ($qte <= 0) {
-
-        // On supprime le produit du panier
         unset($_SESSION['panier'][$id]);
-
     } else {
-
-        // Sinon → on met à jour la quantité
+        // Sinon → met à jour la quantité
         $_SESSION['panier'][$id]['quantite'] = $qte;
     }
+
+    // Redirige vers le panier
+    header('Location: panier.php');
+    exit;
 }
 
-// =======================
-// CAS 3 : SUPPRIMER PRODUIT
-// =======================
+// ============================================
+// CAS 3 : SUPPRIMER UN PRODUIT
+// ============================================
 if ($action === 'supprimer') {
 
-    // Récupérer l'id du produit
-    $id = $_POST['id'];
+    $id = (int)$_POST['id'];
 
-    // Supprimer le produit du panier
+    // Supprime le produit du tableau de session
     unset($_SESSION['panier'][$id]);
+
+    // Redirige vers le panier
+    header('Location: panier.php');
+    exit;
 }
 
-// =======================
-// REDIRECTION
-// =======================
-
-// Après chaque action, on redirige vers la page panier.php
-header('Location: panier.php');
-
-// Terminer le script
+// Si l'action n'est pas reconnue → retour accueil
+header('Location: index.php');
 exit;
 ?>

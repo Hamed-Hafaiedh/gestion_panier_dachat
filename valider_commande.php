@@ -1,98 +1,109 @@
 <?php
-// Démarrer la session pour accéder au panier
-session_start();
+// ============================================
+// VALIDER COMMANDE - Enregistre la commande
+// dans la base de données PostgreSQL
+// ============================================
 
-// Inclure la connexion à la base de données (PDO)
+session_start();
 require 'config/connexion.php';
 
-// Vérifier si le panier est vide
+// ============================================
+// VÉRIFICATION : Panier non vide
+// ============================================
 if (empty($_SESSION['panier'])) {
-
-    // Si vide → redirection vers la boutique
+    // Si le panier est vide, retour à la boutique
     header('Location: index.php');
     exit;
 }
 
-// Récupérer le panier depuis la session
+// Récupère le panier et calcule le total
 $panier = $_SESSION['panier'];
+$total  = 0;
 
-// Initialiser le total
-$total = 0;
-
-// Calculer le total de la commande
 foreach ($panier as $item) {
     $total += $item['prix'] * $item['quantite'];
 }
 
+// ============================================
+// ENREGISTREMENT EN BASE DE DONNÉES
+// On utilise une transaction pour garantir
+// que tout s'enregistre ou rien (cohérence)
+// ============================================
 try {
-    // Démarrer une transaction (important pour la cohérence des données)
-    // garantit que tout se passe bien (commande + détails)
+
+    // Démarre la transaction
     $pdo->beginTransaction();
 
-    // =========================
-    // 1. INSÉRER LA COMMANDE
-    // =========================
-
-    // Préparer la requête SQL
-    // On insère le total et un statut "validée"
-    // RETURNING id permet de récupérer l'id de la commande créée (PostgreSQL)
-    $stmt = $pdo->prepare("INSERT INTO commandes (total, statut) VALUES (?, 'validée') RETURNING id");
-
-    // Exécuter la requête avec le total
+    // --- ÉTAPE 1 : Créer la commande principale ---
+    // INSERT retourne l'id créé grâce à RETURNING (spécifique à PostgreSQL)
+    $stmt = $pdo->prepare("
+        INSERT INTO commandes (total, statut)
+        VALUES (?, 'validée')
+        RETURNING id
+    ");
     $stmt->execute([$total]);
+    $commande_id = $stmt->fetchColumn();   // récupère l'id généré
 
-    // Récupérer l'id de la commande créée
-    $commande_id = $stmt->fetchColumn();
-
-    // =========================
-    // 2. INSÉRER LES DÉTAILS
-    // =========================
-
-    // Préparer la requête pour les produits
+    // --- ÉTAPE 2 : Enregistrer chaque produit du panier ---
     $stmt2 = $pdo->prepare("
-        INSERT INTO commande_details 
-        (commande_id, produit_id, quantite, prix_unitaire) 
+        INSERT INTO commande_details (commande_id, produit_id, quantite, prix_unitaire)
         VALUES (?, ?, ?, ?)
     ");
 
-    // Parcourir chaque produit du panier
     foreach ($panier as $produit_id => $item) {
-
-        // Insérer chaque produit dans la table commande_details
         $stmt2->execute([
-            $commande_id,           // id de la commande
-            $produit_id,            // id du produit
-            $item['quantite'],      // quantité
-            $item['prix']           // prix unitaire
+            $commande_id,
+            $produit_id,
+            $item['quantite'],
+            $item['prix']
         ]);
     }
 
-    // =========================
-    // 3. VALIDER LA TRANSACTION
-    // =========================
-
+    // --- ÉTAPE 3 : Valider la transaction ---
     $pdo->commit();
 
-    // =========================
-    // 4. VIDER LE PANIER
-    // =========================
-
+    // --- ÉTAPE 4 : Vider le panier ---
     unset($_SESSION['panier']);
 
-    // =========================
-    // 5. MESSAGE DE SUCCÈS
-    // =========================
+    // ============================================
+    // AFFICHAGE PAGE DE SUCCÈS
+    // ============================================
+    ?>
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Commande confirmée</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+    <header>
+        <h1>🛒 Notre Boutique</h1>
+        <a href="index.php">← Retour à la boutique</a>
+    </header>
 
-    echo "<h2> Commande #$commande_id validée avec succès !</h2>";
-    echo "<p>Total : " . number_format($total, 2) . " TND</p>";
-    echo '<a href="index.php">Retour à la boutique</a>';
+    <div class="confirmation">
+        <div class="icone-succes">✅</div>
+        <h2>Commande confirmée !</h2>
+        <p>
+            Commande <strong>#<?= $commande_id ?></strong> enregistrée avec succès.<br>
+            Montant total : <strong><?= number_format($total, 2) ?> TND</strong>
+        </p>
+        <a href="index.php">Retour à la boutique</a>
+    </div>
+    </body>
+    </html>
+
+    <?php
 
 } catch (Exception $e) {
 
-    // En cas d'erreur → annuler toutes les opérations
+    // En cas d'erreur → annule toutes les insertions
     $pdo->rollBack();
 
-    // Afficher l'erreur
-    echo "Erreur : " . $e->getMessage();
+    echo "<p style='color:red; padding:20px;'>
+            ❌ Une erreur s'est produite : " . htmlspecialchars($e->getMessage()) . "
+          </p>";
+    echo '<a href="panier.php">← Retour au panier</a>';
 }
 ?>
