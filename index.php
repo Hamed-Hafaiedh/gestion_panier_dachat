@@ -32,6 +32,7 @@ if (isset($_SESSION['panier'])) {
      HEADER - Barre du haut
      ============================================ -->
 <header>
+    <h1>Bienvenue</h1>
     <h1>🛒 Notre Boutique</h1>
     <a href="panier.php">
         🛍️ Panier (<?= $nb_articles ?> article<?= $nb_articles > 1 ? 's' : '' ?>)
