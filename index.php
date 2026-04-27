@@ -3,14 +3,68 @@
 // PAGE PRINCIPALE - Affichage des produits
 // ============================================
 
-session_start();                   // Démarre la session (nécessaire pour le panier)
-require 'config/connexion.php';    // Connexion à la base de données PostgreSQL
+session_start();
+require 'config/connexion.php';
 
-// Récupère tous les produits qui ont du stock disponible
-$stmt = $pdo->query("SELECT * FROM produits WHERE stock > 0");
-$produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// ============================================
+// TRAITEMENT DU FORMULAIRE
+// Ce bloc s'exécute seulement quand on clique "Ajouter"
+// ============================================
 
-// Compte le total d'articles dans le panier (pour afficher dans le header)
+$erreur = '';   // message d'erreur (vide au départ)
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // Récupère et sécurise les données du formulaire
+    $id        = (int)$_POST['id'];
+    $nom       = htmlspecialchars($_POST['nom']);
+    $prix      = (float)$_POST['prix'];
+    $qte       = (int)$_POST['quantite'];
+    $stock_max = (int)$_POST['stock_max'];
+
+    // ---- CONTRÔLE DE SAISIE PHP ----
+
+    if ($qte < 1) {
+        // Quantité trop basse
+        $erreur = "❌ La quantité doit être au moins 1.";
+
+    } elseif ($qte > $stock_max) {
+        // Quantité dépasse le stock disponible
+        $erreur = "❌ Stock insuffisant. Maximum disponible : $stock_max.";
+
+    } else {
+        // ✅ Données valides → on ajoute au panier
+
+        if (!isset($_SESSION['panier'])) {
+            $_SESSION['panier'] = [];
+        }
+
+        if (isset($_SESSION['panier'][$id])) {
+            // Produit déjà dans le panier → on ajoute la quantité
+            $_SESSION['panier'][$id]['quantite'] += $qte;
+        } else {
+            // Nouveau produit → on crée l'entrée
+            $_SESSION['panier'][$id] = [
+                'nom'      => $nom,
+                'prix'     => $prix,
+                'quantite' => $qte
+            ];
+        }
+
+        // Redirige pour éviter le re-envoi si on recharge la page
+        header('Location: index.php');
+        exit;
+    }
+}
+
+// ============================================
+// RÉCUPÉRATION DES PRODUITS depuis la base
+// ============================================
+
+$stmt     = $pdo->query("SELECT * FROM produits WHERE stock > 0");
+$produits = $stmt->fetchAll();
+
+// Compte les articles dans le panier (pour le header)
 $nb_articles = 0;
 if (isset($_SESSION['panier'])) {
     foreach ($_SESSION['panier'] as $item) {
@@ -28,119 +82,49 @@ if (isset($_SESSION['panier'])) {
 </head>
 <body>
 
-<!-- ============================================
-     HEADER - Barre du haut
-     ============================================ -->
 <header>
-    <h1>Bienvenue</h1>
     <h1>🛒 Notre Boutique</h1>
     <a href="panier.php">
         🛍️ Panier (<?= $nb_articles ?> article<?= $nb_articles > 1 ? 's' : '' ?>)
     </a>
 </header>
 
+<?php if ($erreur !== ''): ?>
+    <!-- Affiche le message d'erreur en rouge si il y en a un -->
+    <p class="message-erreur"><?= $erreur ?></p>
+<?php endif; ?>
+
 <h2 class="titre-section">Nos Produits</h2>
 
-<!-- ============================================
-     GRILLE DES PRODUITS
-     ============================================ -->
 <div class="produits-grid">
+<?php foreach ($produits as $p): ?>
 
-    <?php if (empty($produits)): ?>
-        <p style="text-align:center; color:#777;">Aucun produit disponible pour le moment.</p>
+    <div class="carte-produit">
+        <h3><?= htmlspecialchars($p['nom']) ?></h3>
+        <p><?= htmlspecialchars($p['description']) ?></p>
+        <p class="prix"><?= number_format($p['prix'], 2) ?> TND</p>
+        <small style="color:#999;">Stock : <?= $p['stock'] ?> restant(s)</small>
 
-    <?php else: ?>
+        <!-- Le formulaire envoie vers index.php (cette même page) -->
+        <form action="index.php" method="POST">
 
-        <?php foreach ($produits as $p): ?>
-        <div class="carte-produit">
+            <!-- Champs cachés : infos du produit envoyées au serveur -->
+            <input type="hidden" name="id"        value="<?= $p['id'] ?>">
+            <input type="hidden" name="nom"       value="<?= htmlspecialchars($p['nom']) ?>">
+            <input type="hidden" name="prix"      value="<?= $p['prix'] ?>">
+            <input type="hidden" name="stock_max" value="<?= $p['stock'] ?>">
 
-            <!-- Nom du produit (htmlspecialchars évite les injections HTML) -->
-            <h3><?= htmlspecialchars($p['nom']) ?></h3>
+            <div class="form-ligne">
+                <label>Qté :</label>
+                <input type="number" name="quantite" value="1" min="1">
+            </div>
 
-            <!-- Description -->
-            <p><?= htmlspecialchars($p['description']) ?></p>
+            <button type="submit" class="btn-ajouter">🛒 Ajouter au panier</button>
+        </form>
+    </div>
 
-            <!-- Prix -->
-            <p class="prix"><?= number_format($p['prix'], 2) ?> TND</p>
-
-            <!-- Stock restant -->
-            <small style="color:#999;">Stock : <?= $p['stock'] ?> restant(s)</small>
-
-            <!-- ========================================
-                 FORMULAIRE D'AJOUT AU PANIER
-                 avec contrôle de saisie JavaScript
-                 ======================================== -->
-            <form action="panier_action.php" method="POST"
-                  onsubmit="return validerAjout(this, <?= $p['stock'] ?>)">
-
-                <!-- Champs cachés : envoient les infos au serveur -->
-                <input type="hidden" name="action" value="ajouter">
-                <input type="hidden" name="id"     value="<?= $p['id'] ?>">
-                <input type="hidden" name="nom"    value="<?= htmlspecialchars($p['nom']) ?>">
-                <input type="hidden" name="prix"   value="<?= $p['prix'] ?>">
-
-                <!-- Champ quantité visible -->
-                <div class="form-ligne">
-                    <label>Qté :</label>
-                    <input type="number"
-                           name="quantite"
-                           value="1"
-                           min="1"
-                           max="<?= $p['stock'] ?>"
-                           id="qte_<?= $p['id'] ?>">
-                </div>
-
-                <!-- Message d'erreur (caché par défaut, affiché par JS) -->
-                <span class="erreur-message" id="err_<?= $p['id'] ?>"></span>
-
-                <button type="submit" class="btn-ajouter">🛒 Ajouter au panier</button>
-            </form>
-        </div>
-        <?php endforeach; ?>
-
-    <?php endif; ?>
+<?php endforeach; ?>
 </div>
-
-<!-- ============================================
-     JAVASCRIPT - Contrôle de saisie côté client
-     ============================================ -->
-<script>
-/**
- * Valide la quantité avant l'envoi du formulaire
- * @param {HTMLFormElement} form - Le formulaire soumis
- * @param {number} stockMax - Le stock maximum disponible
- * @returns {boolean} - true = envoyer, false = bloquer
- */
-function validerAjout(form, stockMax) {
-    // Récupère le champ quantité du formulaire
-    const inputQte = form.querySelector('input[name="quantite"]');
-    const qte = parseInt(inputQte.value);
-
-    // Récupère l'id du produit pour afficher l'erreur au bon endroit
-    const id = form.querySelector('input[name="id"]').value;
-    const erreur = document.getElementById('err_' + id);
-
-    // Vérifie que la quantité est un nombre valide
-    if (isNaN(qte) || qte < 1) {
-        erreur.textContent = '❌ La quantité doit être au moins 1.';
-        erreur.style.display = 'block';
-        inputQte.focus();   // Met le focus sur le champ
-        return false;       // Bloque l'envoi
-    }
-
-    // Vérifie que la quantité ne dépasse pas le stock
-    if (qte > stockMax) {
-        erreur.textContent = `❌ Stock insuffisant. Maximum : ${stockMax}`;
-        erreur.style.display = 'block';
-        inputQte.focus();
-        return false;
-    }
-
-    // Tout est bon : cache l'erreur et envoie le formulaire
-    erreur.style.display = 'none';
-    return true;
-}
-</script>
 
 </body>
 </html>

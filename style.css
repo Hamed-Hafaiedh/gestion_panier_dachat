@@ -175,11 +175,16 @@ input[type="number"]:focus {
     border-color: var(--couleur-accent);  /* contour rouge au focus */
 }
 
-/* Message d'erreur validation */
-.erreur-message {
-    color: var(--couleur-accent);
-    font-size: 0.82rem;
-    display: none;              /* caché par défaut */
+/* Message d'erreur PHP (affiché en haut de page) */
+.message-erreur {
+    background: #fdecea;
+    color: #c0392b;
+    border-left: 4px solid var(--couleur-accent);
+    padding: 14px 20px;
+    margin: 20px auto;
+    max-width: 700px;
+    border-radius: 8px;
+    font-size: 0.95rem;
 }
 
 /* ============================================
